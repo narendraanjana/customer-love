@@ -239,10 +239,18 @@
             max-width: 1500px;
         }
 
+        .grid {
+            padding: 14px 28px 0 28px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            align-items: flex-start;
+            max-width: 1500px;
+        }
+
         .card-wrapper {
-            width: var(--preview-w, 420px);
-            max-width: none;
-            /* important: allow it to grow */
+            flex: 0 0 min(100%, var(--preview-w, 420px));
+            max-width: min(100%, var(--preview-w, 420px));
         }
 
         .grid {
@@ -260,9 +268,8 @@
             user-select: none;
         }
 
-        /* Canvas scales to wrapper width automatically */
         .card-container canvas {
-            width: var(--preview-w, 420px);
+            width: 100%;
             height: auto;
             display: block;
         }
@@ -1255,7 +1262,8 @@
                 item.pill.textContent = `${item.canvas.width}×${item.canvas.height}`;
 
                 const previewW = Math.round(item.canvas.width * PREVIEW_SCALE);
-                item.wrapper.style.setProperty('--preview-w', `${previewW}px`);
+                const capped = Math.min(previewW, 700);
+                item.wrapper.style.setProperty('--preview-w', `${capped}px`);
                 return;
             }
 
@@ -1271,8 +1279,11 @@
 
                 renderCard(card.canvas, quote, author, designsCache[i], format, radius, cardState[i]);
                 card.pill.textContent = `${card.canvas.width}×${card.canvas.height}`;
+
+
                 const previewW = Math.round(card.canvas.width * PREVIEW_SCALE);
-                card.wrapper.style.setProperty('--preview-w', `${previewW}px`);
+                const capped = Math.min(previewW, 700); // cap so UX stays sane
+                card.wrapper.style.setProperty('--preview-w', `${capped}px`);
             }
 
             showToast(newDesigns ? 'Generated new styles' : 'Updated');
