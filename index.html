@@ -16,9 +16,6 @@
         :root {
             --panel-w: 380px;
             --card-min: 320px;
-            /* grid min column width */
-            --card-max: 520px;
-            /* stops the “giant card” problem */
         }
 
         body {
@@ -224,33 +221,25 @@
             opacity: 0.95;
         }
 
-        /* Better responsive grid: never let cards go “full-width giant” */
-        .grid {
-            padding: 14px 28px 0 28px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(var(--card-min), 1fr));
-            gap: 18px;
-            align-items: start;
-            max-width: 1500px;
-        }
-
         .grid {
             padding: 14px 28px 0 28px;
             display: flex;
             flex-wrap: wrap;
             gap: 18px;
             align-items: flex-start;
-            max-width: 1500px;
+
+            width: 100%;
+            max-width: none;
+            /* IMPORTANT: allow full width */
         }
 
         .card-wrapper {
-            flex: 0 0 min(100%, var(--preview-w, 420px));
-            max-width: min(100%, var(--preview-w, 420px));
-        }
-
-        .grid {
-            grid-template-columns: repeat(auto-fit, minmax(280px, max-content));
-            align-items: start;
+            width: max(var(--card-min), var(--preview-w, 420px));
+            /* UI preview width */
+            max-width: 100%;
+            /* never overflow container */
+            flex: 0 0 auto;
+            /* do not stretch */
         }
 
         .card-container {
@@ -760,9 +749,9 @@
             return y;
         }
 
-        // --- State ---
         let designsCache = [];
-        let cardState = []; // per-card export size overrides: {w,h} or nulls
+        let cardState = [];
+        let domCards = [];
 
         function makeDesigns(count) {
             const baseSeed = Date.now();
@@ -1117,21 +1106,14 @@
         function attachResize(handle, canvas, index, wrapperEl) {
             let startX = 0, startY = 0;
             let startW = 0, startH = 0;
+            let startPreviewW = 0;
+            let scale = 1;
             let dragging = false;
 
-            // Convert screen pixels to export pixels based on current displayed scale
-            const getScale = () => {
-                // wrapper is what controls displayed canvas width
-                const displayW = canvas.getBoundingClientRect().width;
-
-                const exportW = canvas.width || 1;
-                return exportW / Math.max(1, displayW);
-            };
+            const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
             const onMove = (e) => {
                 if (!dragging) return;
-
-                const scale = getScale();
 
                 const dx = (e.clientX - startX) * scale;
                 const dy = (e.clientY - startY) * scale;
@@ -1139,13 +1121,29 @@
                 const format = document.getElementById('formatSelect').value;
                 const base = FORMATS[format];
 
-                // new desired export size from drag
-                const newW = Math.max(base.minWidth, Math.round(startW + dx));
-                const newH = Math.max(base.minHeight, Math.round(startH + dy));
+                const rightPanel = document.querySelector('.right-panel');
+                const maxPreview = rightPanel
+                    ? rightPanel.getBoundingClientRect().width - 56
+                    : 1200;
 
-                cardState[index] = { w: newW, h: newH };
+                const maxExportW = Math.floor(maxPreview / PREVIEW_SCALE);
 
-                // re-render only this card for snappy drag
+                let newW = Math.max(base.minWidth, Math.round(startW + dx));
+                let newH = Math.max(base.minHeight, Math.round(startH + dy));
+
+                newW = Math.min(newW, maxExportW);
+
+                const prev = cardState[index] || {};
+                if (prev.w === newW && prev.h === newH) return;
+
+                const newPreviewW = Math.round(newW * PREVIEW_SCALE);
+
+                cardState[index] = {
+                    w: newW,
+                    h: newH,
+                    previewW: Math.max(260, Math.min(newPreviewW, maxPreview))
+                };
+
                 renderAll({ rerenderOnlyIndex: index });
             };
 
@@ -1167,11 +1165,17 @@
                 startX = e.clientX;
                 startY = e.clientY;
 
-                // start from current export size
                 startW = canvas.width;
                 startH = canvas.height;
 
-                // capture pointer so it keeps resizing even if cursor leaves handle
+                // read current preview width from wrapper
+                const cssPreview = getComputedStyle(wrapperEl).getPropertyValue('--preview-w').trim();
+                startPreviewW = cssPreview ? parseFloat(cssPreview) : wrapperEl.getBoundingClientRect().width;
+
+                // IMPORTANT: freeze scale at pointerdown
+                const displayW = canvas.getBoundingClientRect().width;
+                scale = (canvas.width || 1) / Math.max(1, displayW);
+
                 handle.setPointerCapture(e.pointerId);
 
                 document.body.style.cursor = 'se-resize';
@@ -1242,26 +1246,41 @@
             // designs
             if (newDesigns || designsCache.length !== count) {
                 designsCache = makeDesigns(count);
-                cardState = Array.from({ length: count }, () => ({ w: null, h: null }));
+                cardState = Array.from({ length: count }, () => ({ w: null, h: null, previewW: null }));
             }
 
             const info = document.getElementById('infoText');
             info.textContent = `Format min ${FORMATS[format].minWidth}×${FORMATS[format].minHeight}. Drag bottom-right handle to resize export.`;
 
-            // if rerenderOnlyIndex: just redraw that canvas
+            // --- RERENDER ONLY ONE CARD ---
             if (rerenderOnlyIndex !== null) {
                 const item = domCards[rerenderOnlyIndex];
-                renderCard(item.canvas, quote, author, designsCache[rerenderOnlyIndex], format, radius, cardState[rerenderOnlyIndex]);
+                const st = cardState[rerenderOnlyIndex];
+
+                renderCard(
+                    item.canvas,
+                    quote,
+                    author,
+                    designsCache[rerenderOnlyIndex],
+                    format,
+                    radius,
+                    st
+                );
 
                 item.pill.textContent = `${item.canvas.width}×${item.canvas.height}`;
 
-                const previewW = Math.round(item.canvas.width * PREVIEW_SCALE);
-                const capped = Math.min(previewW, 700);
-                item.wrapper.style.setProperty('--preview-w', `${capped}px`);
+                // Apply preview width (persisted)
+                if (st?.previewW) {
+                    item.wrapper.style.setProperty('--preview-w', `${st.previewW}px`);
+                } else {
+                    const previewW = Math.round(item.canvas.width * PREVIEW_SCALE);
+                    item.wrapper.style.setProperty('--preview-w', `${Math.min(previewW, 700)}px`);
+                }
+
                 return;
             }
 
-            // full rebuild
+            // --- FULL REBUILD ---
             const grid = document.getElementById('cardsGrid');
             grid.innerHTML = '';
             domCards = [];
@@ -1271,20 +1290,22 @@
                 grid.appendChild(card.wrapper);
                 domCards.push(card);
 
-                renderCard(card.canvas, quote, author, designsCache[i], format, radius, cardState[i]);
+                const st = cardState[i];
+
+                renderCard(card.canvas, quote, author, designsCache[i], format, radius, st);
                 card.pill.textContent = `${card.canvas.width}×${card.canvas.height}`;
 
-
-                const previewW = Math.round(card.canvas.width * PREVIEW_SCALE);
-                const capped = Math.min(previewW, 700); // cap so UX stays sane
-                card.wrapper.style.setProperty('--preview-w', `${capped}px`);
+                // Apply preview width (persisted)
+                if (st?.previewW) {
+                    card.wrapper.style.setProperty('--preview-w', `${st.previewW}px`);
+                } else {
+                    const previewW = Math.round(card.canvas.width * PREVIEW_SCALE);
+                    card.wrapper.style.setProperty('--preview-w', `${Math.min(previewW, 700)}px`);
+                }
             }
 
             showToast(newDesigns ? 'Generated new styles' : 'Updated');
         }
-
-        // --- Wire UI ---
-        let domCards = [];
 
         function maybeLiveRender() {
             if (document.getElementById('liveUpdate').checked) {
@@ -1314,9 +1335,11 @@
 
         // init
         updateRangeLabels();
+
         const initialCount = Number(document.getElementById('countSelect').value);
         designsCache = makeDesigns(initialCount);
-        cardState = Array.from({ length: initialCount }, () => ({ w: null, h: null }));
+        cardState = Array.from({ length: initialCount }, () => ({ w: null, h: null, previewW: null }));
+
         renderAll({ newDesigns: false });
     </script>
 </body>
