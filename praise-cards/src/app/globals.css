@@ -1,4 +1,3 @@
-/* app/globals.css */
 * {
   margin: 0;
   padding: 0;
@@ -34,6 +33,7 @@ body::before {
   min-height: 100vh;
   position: relative;
   z-index: 1;
+  align-items: flex-start;
 }
 
 .panel {
@@ -48,11 +48,14 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10);
   position: sticky;
   top: 0;
-  height: 100vh;
-  overflow: auto;
+  height: auto;         
+  max-height: calc(100vh - 48px); 
+  overflow-y: auto;        
+  padding-bottom: 48px;
+
   margin: 2%;
   border-radius: 8px;
 }
@@ -60,7 +63,6 @@ body::before {
 .right-panel {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 48px;
 }
 
 .header {
@@ -74,7 +76,7 @@ h1 {
   font-size: 22px;
   font-weight: 700;
   line-height: 1.15;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #EA436B 0%, #cfa6a6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -115,8 +117,8 @@ textarea:focus,
 input:focus,
 select:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+  border-color: #EA436B;
+  box-shadow: 0 0 0 3px rgba(234, 102, 139, 0.15);
 }
 
 .row {
@@ -132,7 +134,7 @@ select:focus {
 input[type="range"] {
   width: 100%;
   height: 28px;
-  accent-color: #667eea;
+  accent-color: #EA436B;
 }
 
 .range-row {
@@ -155,7 +157,7 @@ input[type="range"] {
   gap: 10px;
   align-items: center;
   padding: 10px 12px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(209, 107, 107, 0.08);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.7);
 }
@@ -182,19 +184,16 @@ input[type="range"] {
 }
 
 .btn.primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.35);
-}
-
-.btn.secondary {
-  background: rgba(0, 0, 0, 0.06);
-  color: #1d1d1f;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid #EA436B;
+  color: #EA436B;
+  background: transparent;
 }
 
 .btn:hover {
   transform: translateY(-2px);
+  background: #EA436B;
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(105, 105, 105, 0.35);
 }
 
 .btn:active {
@@ -204,7 +203,7 @@ input[type="range"] {
 
 .topbar {
   padding: 18px 28px 0 28px;
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(56, 56, 56, 0.92);
   font-size: 13px;
   font-weight: 650;
 }
@@ -218,9 +217,10 @@ input[type="range"] {
   display: flex;
   flex-wrap: wrap;
   gap: 18px;
-  align-items: flex-start;
+  align-items: flex-end;
   width: 100%;
   max-width: none;
+  place-items: center;
 }
 
 .card-wrapper {
@@ -342,7 +342,6 @@ input[type="range"] {
 
   .left-panel {
     width: 100%;
-    height: auto;
     position: relative;
     border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.25);

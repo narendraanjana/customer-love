@@ -127,7 +127,6 @@ export default function PraiseGenerator() {
     const radiusSelect = $<HTMLSelectElement>("radiusSelect")!;
     const stylePack = $<HTMLSelectElement>("stylePack")!;
     const liveUpdate = $<HTMLInputElement>("liveUpdate")!;
-    const shuffleBtn = $<HTMLButtonElement>("shuffleBtn")!;
     const generateBtn = $<HTMLButtonElement>("generateBtn")!;
     const quoteSize = $<HTMLInputElement>("quoteSize")!;
     const authorSize = $<HTMLInputElement>("authorSize")!;
@@ -307,7 +306,7 @@ export default function PraiseGenerator() {
       ctx.lineCap = "round";
 
       // How many doodles (keep small + clean)
-      const n = 10 + Math.floor(seededRandom(seed) * 1);
+      const n = 10; //+ Math.floor(seededRandom(seed) * 1);
 
       const drawTinyHeart = (x: number, y: number, size: number, s: number) => {
         ctx.save();
@@ -1056,7 +1055,6 @@ export default function PraiseGenerator() {
 
     // --- wire UI listeners (store refs for cleanup) ---
     const onGenerate = () => renderAll({ newDesigns: true });
-    const onShuffle = () => renderAll({ newDesigns: true });
     const onFormatChange = () => renderAll({ newDesigns: false });
     const onCountChange = () => renderAll({ newDesigns: true });
     const onRadiusChange = () => maybeLiveRender();
@@ -1073,7 +1071,6 @@ export default function PraiseGenerator() {
     };
 
     generateBtn.addEventListener("click", onGenerate);
-    shuffleBtn.addEventListener("click", onShuffle);
 
     formatSelect.addEventListener("change", onFormatChange);
     countSelect.addEventListener("change", onCountChange);
@@ -1102,7 +1099,6 @@ export default function PraiseGenerator() {
     // Cleanup
     return () => {
       generateBtn.removeEventListener("click", onGenerate);
-      shuffleBtn.removeEventListener("click", onShuffle);
 
       formatSelect.removeEventListener("change", onFormatChange);
       countSelect.removeEventListener("change", onCountChange);
@@ -1234,9 +1230,6 @@ export default function PraiseGenerator() {
           </div>
 
           <div className="btn-row">
-            <button className="btn secondary" id="shuffleBtn">
-              Shuffle styles
-            </button>
             <button className="btn primary" id="generateBtn">
               Generate
             </button>
@@ -1246,8 +1239,8 @@ export default function PraiseGenerator() {
         <div className="panel right-panel">
           <div className="topbar">
             <div className="hint" id="infoText">
-              Tip: Drag the bottom-right corner of a card to resize export width
-              and height.
+              Tip: Drag the bottom-right corner of a card to resize width and
+              height.
             </div>
           </div>
           <div className="grid" id="cardsGrid"></div>

@@ -1,4 +1,3 @@
-// app/page.tsx
 import PraiseGenerator from "@/components/PraiseGenerator";
 
 export default function Page() {
