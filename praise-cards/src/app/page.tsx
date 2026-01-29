@@ -732,7 +732,7 @@ export default function PraiseWallPage() {
         /* Dense grid like Instagram Explore: fill the row with as many items as fit */
         .masonry {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
           gap: 10px;
           width: 100%;
           margin: 0 auto;
@@ -838,7 +838,7 @@ export default function PraiseWallPage() {
         @media (max-width: 1080px) {
           .masonry {
             gap: 10px;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
           }
         }
 
@@ -848,7 +848,7 @@ export default function PraiseWallPage() {
           }
           .masonry {
             gap: 8px;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
           }
           .item {
             width: 100%;
