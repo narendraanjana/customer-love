@@ -670,61 +670,87 @@
         // More “fun” details: subtle doodles
         function drawDoodles(ctx, width, height, color, seed) {
             ctx.save();
-            ctx.globalAlpha = 0.18;
+            ctx.globalAlpha = 0.12; // a bit subtle
             ctx.strokeStyle = color;
             ctx.fillStyle = color;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
 
-            const n = 14 + Math.floor(seededRandom(seed));
+            // How many doodles (keep small + clean)
+            const n = 10 + Math.floor(seededRandom(seed) * 1);
+
+            const drawTinyHeart = (x, y, size, s) => {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate((seededRandom(s) - 0.5) * 0.8);
+
+                const r = size * 0.45;
+                ctx.beginPath();
+                ctx.moveTo(0, r);
+                ctx.bezierCurveTo(-size, -r, -size, -size, 0, -size * 0.25);
+                ctx.bezierCurveTo(size, -size, size, -r, 0, r);
+                ctx.closePath();
+
+                ctx.globalAlpha *= 0.9;
+                ctx.fill();
+                ctx.globalAlpha *= 1.05;
+                ctx.lineWidth = Math.max(1.2, size * 0.12);
+                ctx.stroke();
+
+                ctx.restore();
+            };
+
+            const drawTinyStar = (x, y, size, s) => {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(seededRandom(s) * Math.PI * 2);
+
+                const spikes = 5;
+                const outer = size;
+                const inner = size * 0.45;
+
+                ctx.beginPath();
+                for (let i = 0; i < spikes * 2; i++) {
+                    const rad = i % 2 === 0 ? outer : inner;
+                    const wob = 1 + (seededRandom(s + i * 7) - 0.5) * 0.18; // hand-drawn wobble
+                    const angle = (Math.PI * i) / spikes - Math.PI / 2;
+                    const px = Math.cos(angle) * rad * wob;
+                    const py = Math.sin(angle) * rad * wob;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+
+                ctx.globalAlpha *= 0.85;
+                ctx.fill();
+                ctx.globalAlpha *= 1.1;
+                ctx.lineWidth = Math.max(1.2, size * 0.12);
+                ctx.stroke();
+
+                ctx.restore();
+            };
+
             for (let i = 0; i < n; i++) {
                 const x = seededRandom(seed + i * 11) * width;
                 const y = seededRandom(seed + i * 11 + 1) * height;
-                const s = 10 + seededRandom(seed + i * 11 + 2) * 26;
+
+                // tiny sizes
+                const size = 7 + seededRandom(seed + i * 11 + 2) * 12;
 
                 // keep center cleaner
                 const cx = width / 2, cy = height / 2;
-                if (Math.hypot(x - cx, y - cy) < Math.min(width, height) * 0.22) continue;
+                if (Math.hypot(x - cx, y - cy) < Math.min(width, height) * 0.26) continue;
 
-                const t = Math.floor(seededRandom(seed + i * 19) * 3);
-                if (t === 0) {
-                    // dots cluster
-                    for (let k = 0; k < 6; k++) {
-                        const dx = (seededRandom(seed + i * 31 + k) - .5) * s * 1.5;
-                        const dy = (seededRandom(seed + i * 33 + k) - .5) * s * 1.5;
-                        const r = 1.2 + seededRandom(seed + i * 37 + k) * 2.4;
-                        ctx.beginPath();
-                        ctx.arc(x + dx, y + dy, r, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                } else if (t === 1) {
-                    // spark
-                    ctx.lineWidth = 2.2;
-                    ctx.lineCap = 'round';
-                    ctx.beginPath();
-                    ctx.moveTo(x - s * 0.6, y);
-                    ctx.lineTo(x + s * 0.6, y);
-                    ctx.stroke();
-                    ctx.beginPath();
-                    ctx.moveTo(x, y - s * 0.6);
-                    ctx.lineTo(x, y + s * 0.6);
-                    ctx.stroke();
-                } else {
-                    // squiggle
-                    ctx.lineWidth = 2.2;
-                    ctx.lineCap = 'round';
-                    ctx.beginPath();
-                    const len = s * (1.4 + seededRandom(seed + i * 41) * 1.0);
-                    const amp = s * (0.22 + seededRandom(seed + i * 43) * 0.22);
-                    for (let t2 = 0; t2 <= 1; t2 += 0.07) {
-                        const px = x + (t2 - 0.5) * len;
-                        const py = y + Math.sin(t2 * Math.PI * 2 * 2.2) * amp;
-                        if (t2 === 0) ctx.moveTo(px, py);
-                        else ctx.lineTo(px, py);
-                    }
-                    ctx.stroke();
-                }
+                // random pick: 0 = heart, 1 = star
+                const kind = Math.floor(seededRandom(seed + i * 19) * 2);
+
+                if (kind === 0) drawTinyHeart(x, y, size, seed + i * 101);
+                else drawTinyStar(x, y, size * 0.9, seed + i * 101);
             }
+
             ctx.restore();
         }
+
 
         function computeSafeStartY(contentY, blockH, safeTop, safeBottom) {
             let y = contentY - blockH / 2;
