@@ -716,7 +716,6 @@ export default function PraiseWallPage() {
 
       <style jsx>{`
         .page {
-          max-width: 1400px;
           margin: 0 auto;
           padding: 36px 18px 90px;
           font-family:
@@ -732,10 +731,9 @@ export default function PraiseWallPage() {
         /* Dense grid like Instagram Explore: fill the row with as many items as fit */
         .masonry {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
           gap: 10px;
           width: 100%;
-          margin: 0 auto;
         }
 
         .item {
