@@ -1,8 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { database } from "@/config/firebase";
+import { database, auth, googleProvider } from "@/config/firebase";
 import { push, ref } from "firebase/database";
+import {
+  signInWithPopup,
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+} from "firebase/auth";
 
 type FormatKey = "square" | "portrait" | "landscape";
 
@@ -135,6 +140,9 @@ export default function PraiseGenerator() {
     const quoteSizeVal = $<HTMLDivElement>("quoteSizeVal")!;
     const authorSizeVal = $<HTMLDivElement>("authorSizeVal")!;
     const toast = $<HTMLDivElement>("toast")!;
+    const authArea = $<HTMLDivElement>("authArea");
+    const authBtn = $<HTMLButtonElement>("authBtn");
+    const authInfo = $<HTMLDivElement>("authInfo");
     const infoText = $<HTMLDivElement>("infoText")!;
     const cardsGrid = $<HTMLDivElement>("cardsGrid")!;
 
@@ -282,6 +290,16 @@ export default function PraiseGenerator() {
 
     async function uploadToWall(canvas: HTMLCanvasElement, index: number) {
       try {
+        const user = auth.currentUser;
+        if (!user || !user.email) {
+          showToast("Please sign in with your @gratefulness.me account to upload.");
+          return;
+        }
+
+        if (!user.email.endsWith("@gratefulness.me")) {
+          showToast("Only @gratefulness.me accounts can upload.");
+          return;
+        }
         const quote = quoteText.value;
         const author = authorText.value;
 
@@ -1139,6 +1157,50 @@ export default function PraiseGenerator() {
     authorSize.addEventListener("input", onAuthorSizeInput);
 
     // init
+    // --- Auth wiring ---
+    try {
+      onAuthStateChanged(auth, (user) => {
+        if (user && user.email && user.email.endsWith("@gratefulness.me")) {
+          if (authInfo) authInfo.textContent = `${user.displayName || user.email}`;
+          if (authBtn) authBtn.textContent = "Sign out";
+        } else if (user && user.email) {
+          // wrong domain: sign out immediately
+          firebaseSignOut(auth).catch(() => {});
+          showToast("Please sign in with an @gratefulness.me account");
+          if (authInfo) authInfo.textContent = "";
+          if (authBtn) authBtn.textContent = "Sign in with Google";
+        } else {
+          if (authInfo) authInfo.textContent = "";
+          if (authBtn) authBtn.textContent = "Sign in with Google";
+        }
+      });
+    } catch (e) {
+      console.warn("Auth not available", e);
+    }
+
+    if (authBtn) {
+      authBtn.addEventListener("click", async () => {
+        const user = auth.currentUser;
+        if (user) {
+          await firebaseSignOut(auth);
+          showToast("Signed out");
+          return;
+        }
+        try {
+          const res = await signInWithPopup(auth, googleProvider);
+          const u = res.user;
+          if (!u.email || !u.email.endsWith("@gratefulness.me")) {
+            await firebaseSignOut(auth);
+            showToast("Only @gratefulness.me accounts are allowed.");
+            return;
+          }
+          showToast(`Signed in as ${u.email}`);
+        } catch (err) {
+          console.error("Sign-in error", err);
+          showToast("Sign-in failed");
+        }
+      });
+    }
     updateRangeLabels();
 
     const initialCount = Number(countSelect.value);
@@ -1182,6 +1244,12 @@ export default function PraiseGenerator() {
           <div className="header">
             <div>
               <h1>❤️ Praise Cards Generator</h1>
+            </div>
+            <div className="auth" id="authArea">
+              <div id="authInfo" style={{ marginRight: 8 }} />
+              <button className="btn" id="authBtn">
+                Sign in with Google
+              </button>
             </div>
           </div>
 

@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 // Load Firebase config from environment variables.
 // For Next.js client-side usage, prefix env vars with NEXT_PUBLIC_.
@@ -15,3 +16,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig as any);
 export const database = getDatabase(app);
+
+// Auth exports for client usage
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
