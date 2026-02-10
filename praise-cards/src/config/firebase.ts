@@ -1,17 +1,17 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 
-// TODO: Replace with your Firebase credentials
-// Get these from Firebase Console > Project Settings
+// Load Firebase config from environment variables.
+// For Next.js client-side usage, prefix env vars with NEXT_PUBLIC_.
 const firebaseConfig = {
-  apiKey: "AIzaSyDIqVgGYWiY6SHBCihqeqlJ88SPaPiwBv0",
-  authDomain: "shiksha-aid.firebaseapp.com",
-  projectId: "shiksha-aid",
-  storageBucket: "shiksha-aid.appspot.com",
-  messagingSenderId: "1018363210699",
-  appId: "1:1018363210699:web:f44380efe3056bb9b3244e",
-  databaseURL: "https://shiksha-aid-default-rtdb.firebaseio.com",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig as any);
 export const database = getDatabase(app);
