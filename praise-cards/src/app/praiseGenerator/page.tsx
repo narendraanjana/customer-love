@@ -62,8 +62,6 @@ export default function Page() {
 
       {status === "unauthenticated" && (
         <div style={{ textAlign: "center" }}>
-          <h2>Sign in to continue</h2>
-          <p>Use your @gratefulness.me Google account.</p>
           <button className="btn primary" onClick={signIn}>
             Sign in with Google
           </button>
