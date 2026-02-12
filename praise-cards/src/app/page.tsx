@@ -753,16 +753,21 @@ export default function PraiseWallPage() {
 
         /* Dense grid like Instagram Explore: fill the row with as many items as fit */
         .masonry {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-          gap: 10px;
-          width: 100%;
-        }
+  column-gap: 14px;
+  width: 100% ;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-rows: masonry;
+}
 
-        .item {
-          display: block;
-          width: 100%;
-        }
+       .item {
+  display: inline-block;
+  width: 100%;
+  margin: 0 0 14px;
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+}
 
         /* ---------------- Card ---------------- */
         .card {
@@ -866,25 +871,30 @@ export default function PraiseWallPage() {
         }
 
         /* keep compact on small screens */
-        @media (max-width: 1080px) {
-          .masonry {
-            gap: 10px;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-          }
-        }
+       @media (max-width: 1100px) {
+  .masonry {
+    column-width: 300px;
+  }
+}
 
-        @media (max-width: 520px) {
-          .page {
+@media (max-width: 800px) {
+  .masonry {
+    column-width: 240px;
+  }
+}
+
+@media (max-width: 520px) {
+  .page {
             padding: 26px 14px 80px;
           }
-          .masonry {
-            gap: 8px;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-          }
-          .item {
-            width: 100%;
-          }
-        }
+  .masonry {
+    column-width: 180px;
+    column-gap: 10px;
+  }
+  .item {
+    margin-bottom: 10px;
+  }
+}
       `}</style>
     </div>
   );
