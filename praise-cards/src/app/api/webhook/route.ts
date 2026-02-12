@@ -35,6 +35,6 @@ export async function POST(request: NextRequest) {
 // Optional: Allow GET requests to verify the endpoint is working
 export async function GET() {
   return NextResponse.json({
-    message: 'Webhook endpoint is active. Send POST requests with JSON data.',
+    message: 'Webhook endpoint is active.',
   });
 }
