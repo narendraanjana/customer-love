@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { database, auth, googleProvider } from "@/config/firebase";
 import { push, ref } from "firebase/database";
 import {
@@ -30,6 +31,7 @@ type CardState = {
 
 export default function PraiseGenerator() {
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!rootRef.current) return;
@@ -1249,6 +1251,15 @@ export default function PraiseGenerator() {
               <div id="authInfo" style={{ marginRight: 8 }} />
               <button className="btn" id="authBtn">
                 Sign in with Google
+              </button>
+            </div>
+            <div style={{ marginLeft: 12 }}>
+              <button
+                className="btn"
+                id="reviewMessagesBtn"
+                onClick={() => router.push("/reviews")}
+              >
+                Review Messages
               </button>
             </div>
           </div>

@@ -139,9 +139,9 @@ export default function PraiseWallPage() {
     const full =
       h.length === 3
         ? h
-            .split("")
-            .map((c) => c + c)
-            .join("")
+          .split("")
+          .map((c) => c + c)
+          .join("")
         : h;
     const n = parseInt(full, 16);
     return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
@@ -502,6 +502,26 @@ export default function PraiseWallPage() {
     ctx.restore();
   }
 
+  function timeAgo(iso: string) {
+    try {
+      const then = new Date(iso).getTime();
+      const diff = Date.now() - then;
+      const sec = Math.floor(diff / 1000);
+      const min = Math.floor(sec / 60);
+      const hr = Math.floor(min / 60);
+      const day = Math.floor(hr / 24);
+      const year = Math.floor(day / 365);
+
+      if (year >= 1) return year === 1 ? "1 year ago" : `${year} years ago`;
+      if (day >= 1) return day === 1 ? "1 day ago" : `${day} days ago`;
+      if (hr >= 1) return hr === 1 ? "1 hour ago" : `${hr} hours ago`;
+      if (min >= 1) return min === 1 ? "1 min ago" : `${min} min ago`;
+      return sec <= 1 ? "just now" : `${sec} sec ago`;
+    } catch {
+      return "unknown";
+    }
+  }
+
   async function copyCanvasImage(canvas: HTMLCanvasElement) {
     try {
       const blob = await new Promise<Blob>((resolve, reject) => {
@@ -680,7 +700,7 @@ export default function PraiseWallPage() {
 
   return (
     <div className="page">
-      {!loading && cards.length === 0 ? (
+      {cards.length === 0 ? (
         <div className="empty">No praise yet.</div>
       ) : (
         <div className="masonry">
@@ -699,6 +719,9 @@ export default function PraiseWallPage() {
                   }}
                   className="canvas"
                 />
+                <div className="time-overlay">
+                  {timeAgo(card.createdAt)}
+                </div>
               </div>
             </div>
           ))}
@@ -803,6 +826,16 @@ export default function PraiseWallPage() {
           z-index: 1000;
         }
 
+        .time-overlay {
+  position: absolute;
+  bottom: 14px;
+  right: 16px;
+  font-size: 10px;
+  font-weight: 400;
+  color: #252525;
+  padding: 6px 10px;
+  pointer-events: none;
+}
         /* load-more button removed in favor of infinite scroll */
 
         .spinnerWrap {
