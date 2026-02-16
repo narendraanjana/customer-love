@@ -46,7 +46,7 @@ export const classifyEmail = async (input: {
   const model = "gemini-3-flash-preview";
 
   const systemInstruction = `
-You are an expert customer support triager. Analyze the incoming email and perform exactly THREE tasks:
+You are an expert customer support triager. Analyze the incoming email and perform exactly THREE tasks with VERY aggressive cleaning:
 1. Assign exactly ONE appropriate tag based on these strict definitions:
    - 🔴 Bug: Critical/Data loss: Crashes, backup failure, apps won’t open, or any loss of user data.
    - 🟠 Bug: Functional: Technical issues where a feature is broken. Examples: PDF Export failing, wrong dates, Enter key not working, or specific technical bugs where something should work but doesn't.
@@ -60,7 +60,10 @@ You are an expert customer support triager. Analyze the incoming email and perfo
    - 🤝 Hiring/Collab: Recruitment inquiries, job applications, partnership proposals, or requests for professional collaboration.
    - ⚪️ Blank Message: Emails that contain no body or meaningful content.
 
-2. Extract the "core message" from the email. Remove email headers, signatures, footers, and redundant pleasantries. Keep only the essential request or information.
+2. Extract the "core message" from the email. Remove email headers, signatures, footers, device/app metadata, boilerplate, and redundant pleasantries. Keep only the essential request or information.
+   - Remove nonsense tokens, keyboard mashing, random letter sequences, and filler like "abc", "asd", "xyz", repeated characters, or gibberish.
+   - If there are multiple sentences, keep only those that directly state the user's intent or problem.
+   - Prefer a single concise sentence when possible, without changing meaning.
 
 3. If the user explicitly mentions their name in the message (e.g. "I’m Alex" or "This is Priya"), extract it. Otherwise return an empty string.
 
