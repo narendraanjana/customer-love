@@ -9,10 +9,14 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
 
     const emailText = data?.target?.data?.text ?? '';
+    const emailSubject = data?.target?.data?.subject ?? '';
     let aiResult = null;
 
     try {
-      aiResult = await classifyEmail(emailText || '');
+      aiResult = await classifyEmail({
+        subject: emailSubject,
+        text: emailText || '',
+      });
     } catch (aiError) {
       console.error('AI classify error:', aiError);
       aiResult = null;
@@ -30,7 +34,7 @@ export async function POST(request: NextRequest) {
         email: data?.conversation?.recipient?.handle ?? null,
       },
       email: {
-        subject: data?.target?.data?.subject ?? null,
+        subject: emailSubject ?? null,
         text: emailText ?? null,
       },
       source: {

@@ -16,4 +16,5 @@ export interface AIResponse {
   tag: EmailTag;
   confidence_score: number;
   cleaned_message: string;
+  extracted_name?: string;
 }

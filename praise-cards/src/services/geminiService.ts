@@ -25,11 +25,19 @@ const EMAIL_SCHEMA = {
       type: Type.STRING,
       description: "The core message without signatures/headers.",
     },
+    extracted_name: {
+      type: Type.STRING,
+      description:
+        "The user's name if explicitly mentioned in the message; otherwise empty.",
+    },
   },
-  required: ["tag", "confidence_score", "cleaned_message"],
+  required: ["tag", "confidence_score", "cleaned_message", "extracted_name"],
 };
 
-export const classifyEmail = async (content: string): Promise<AIResponse> => {
+export const classifyEmail = async (input: {
+  subject?: string;
+  text?: string;
+}): Promise<AIResponse> => {
   if (!ai) {
     throw new Error(
       "Missing API_KEY (or GEMINI_API_KEY/GOOGLE_API_KEY) for @google/genai",
@@ -38,7 +46,7 @@ export const classifyEmail = async (content: string): Promise<AIResponse> => {
   const model = "gemini-3-flash-preview";
 
   const systemInstruction = `
-You are an expert customer support triager. Analyze the incoming email and perform exactly TWO tasks:
+You are an expert customer support triager. Analyze the incoming email and perform exactly THREE tasks:
 1. Assign exactly ONE appropriate tag based on these strict definitions:
    - 🔴 Bug: Critical/Data loss: Crashes, backup failure, apps won’t open, or any loss of user data.
    - 🟠 Bug: Functional: Technical issues where a feature is broken. Examples: PDF Export failing, wrong dates, Enter key not working, or specific technical bugs where something should work but doesn't.
@@ -54,12 +62,18 @@ You are an expert customer support triager. Analyze the incoming email and perfo
 
 2. Extract the "core message" from the email. Remove email headers, signatures, footers, and redundant pleasantries. Keep only the essential request or information.
 
+3. If the user explicitly mentions their name in the message (e.g. "I’m Alex" or "This is Priya"), extract it. Otherwise return an empty string.
+
 Return the result as a JSON object matching the provided schema. Do not modify the essential meaning of the text during cleaning.
   `;
 
+  const subject = input?.subject?.trim() || "";
+  const text = input?.text?.trim() || "";
+  const combined = `Subject: ${subject}\n\nBody:\n${text}`;
+
   const response = await ai.models.generateContent({
     model,
-    contents: `Email Content:\n${content}`,
+    contents: `Email Content:\n${combined}`,
     config: {
       systemInstruction,
       responseMimeType: "application/json",
