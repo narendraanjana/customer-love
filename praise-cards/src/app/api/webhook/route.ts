@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ref, push } from 'firebase/database';
 import { database } from '@/config/firebase';
+import { classifyEmail } from '@/services/geminiService';
 
 export async function POST(request: NextRequest) {
   try {
     // Parse the incoming request body
     const data = await request.json();
+
+    const emailText = data?.target?.data?.text ?? '';
+    let aiResult = null;
+
+    try {
+      aiResult = await classifyEmail(emailText || '');
+    } catch (aiError) {
+      console.error('AI classify error:', aiError);
+      aiResult = null;
+    }
 
     // Extract only the fields we care about from the webhook payload
     const messageData = {
@@ -20,11 +31,12 @@ export async function POST(request: NextRequest) {
       },
       email: {
         subject: data?.target?.data?.subject ?? null,
-        text: data?.target?.data?.text ?? null,
+        text: emailText ?? null,
       },
       source: {
         name: data?.source?.data?.[0]?.name ?? null,
       },
+      ai: aiResult,
       timestamp: new Date().toISOString(),
     };
 
