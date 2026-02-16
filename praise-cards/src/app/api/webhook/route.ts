@@ -25,7 +25,6 @@ export async function POST(request: NextRequest) {
       source: {
         name: data?.source?.data?.[0]?.name ?? null,
       },
-      timestamp: new Date().toISOString(),
     };
 
     // Reference to newMessages collection in Firebase Realtime Database
