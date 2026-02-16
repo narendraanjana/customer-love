@@ -7,9 +7,24 @@ export async function POST(request: NextRequest) {
     // Parse the incoming request body
     const data = await request.json();
 
-    // Add timestamp to the data
+    // Extract only the fields we care about from the webhook payload
     const messageData = {
-      ...data,
+      id: data?.id ?? null,
+      conversation: {
+        id: data?.conversation?.id ?? null,
+        waiting_since: data?.conversation?.waiting_since ?? null,
+      },
+      user: {
+        name: data?.conversation?.recipient?.name ?? null,
+        email: data?.conversation?.recipient?.handle ?? null,
+      },
+      email: {
+        subject: data?.target?.data?.subject ?? null,
+        text: data?.target?.data?.text ?? null,
+      },
+      source: {
+        name: data?.source?.data?.[0]?.name ?? null,
+      },
       timestamp: new Date().toISOString(),
     };
 
